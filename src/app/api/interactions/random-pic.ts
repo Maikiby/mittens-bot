@@ -27,8 +27,15 @@ const createEmbedObject = (source: string, path: string): APIEmbed => {
 export const getRandomPic = async (value: RandomPicType) => {
   switch (value) {
     case "cat":
-      const { url } = await ky.get("https://cataas.com/cat?json=true").json<{ url: string }>()
-      return { ...createEmbedObject("https://cataas.com", url), description: "Here's a random cat picture!" }
+      const imageUrl = ((await (await ky.get("http://shibe.online/api/cats?count=1&urls=true&httpsUrls=true")).text()).slice(2, -2))
+
+      console.log("url", imageUrl)
+
+      return { 
+        ...baseRandomPicEmbed, 
+        description: "Here's a random cat picture! 😺",
+        image: {url: imageUrl},
+      }
 
     case "dog":
       const { message } = await ky.get("https://dog.ceo/api/breeds/image/random").json<{ message: string }>()
