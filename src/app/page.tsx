@@ -1,4 +1,5 @@
 import { GlobalCommands } from "./global-commands"
+import Image from 'next/image'
 
 const imgSrc = "https://i.imgur.com/dqtDT6G_d.webp?maxwidth=760&fidelity=grand";
 
@@ -11,7 +12,7 @@ export default async function Page() {
       <section className="grid grid-cols-1 gap-2">
         
         { imgSrc && (
-          <img 
+          <Image 
           
             src={imgSrc} 
             alt="Mittens Logo"
@@ -28,7 +29,7 @@ export default async function Page() {
         <div className="flex gap-2">
           <a
             className="ring-offset-background focus-visible:ring-ring inline-flex h-10 w-fit items-center justify-center rounded-md bg-[#7289DA] px-4 py-2 text-sm font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            href={discordInviteUrl}
+            href="https://discord.gg/NmXuqGgkb3"
             target="_blank"
             rel="noreferrer"
           >
