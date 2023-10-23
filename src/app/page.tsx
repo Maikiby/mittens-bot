@@ -29,7 +29,7 @@ export default async function Page() {
         <div className="flex gap-2">
           <a
             className="ring-offset-background focus-visible:ring-ring inline-flex h-10 w-fit items-center justify-center rounded-md bg-[#7289DA] px-4 py-2 text-sm font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            href="https://discord.gg/NmXuqGgkb3"
+            href={discordInviteUrl}
             target="_blank"
             rel="noreferrer"
           >
