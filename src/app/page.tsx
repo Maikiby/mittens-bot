@@ -1,10 +1,13 @@
+import Link from "next/link";
 import { GlobalCommands } from "./global-commands"
 import Image from 'next/image'
 
 const imgSrc = "https://i.imgur.com/dqtDT6G_d.webp?maxwidth=760&fidelity=grand";
 
 const githubUrl = "https://github.com/Maikiby/mittens-bot";
-const discordInviteUrl = "https://discord.com/api/oauth2/authorize?client_id=1164992825801318462&permissions=2147485696&scope=bot%20applications.commands";
+const discordInviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_APP_ID}&permissions=2147485696&scope=bot%20applications.commands`;
+const gitHubLogo = "/github.png";
+const discordLogo = "/discord.png";
 
 export default async function Page() {
   return (
@@ -27,22 +30,37 @@ export default async function Page() {
           A simple Discord bot built with Next.js for my Web Development Class :3.
         </h2>
         <div className="flex gap-2">
-          <a
-            className="ring-offset-background focus-visible:ring-ring inline-flex h-10 w-fit items-center justify-center rounded-md bg-[#7289DA] px-4 py-2 text-sm font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            href={discordInviteUrl}
-            target="_blank"
+          <Link 
+            href={discordInviteUrl} 
+            target="_blank" 
             rel="noreferrer"
+            className="btn btn-primary"
           >
+            <Image
+              src={discordLogo} 
+              alt="Discord Logo"
+              width={20}
+              height={20}
+            />
             Add me!
-          </a>
-          <a
-            className="ring-offset-background focus-visible:ring-ring inline-flex h-10 w-fit items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            href={githubUrl}
-            target="_blank"
+          </Link>
+
+          <Link 
+            href={githubUrl} 
+            target="_blank" 
             rel="noreferrer"
+            className="btn"
           >
-            Github
-          </a>
+            <Image 
+              src={gitHubLogo} 
+              alt="GitHub Logo"
+              width={20}
+              height={20}
+            />
+            GitHub
+          </Link>
+
+          
         </div>
       </section>
 
