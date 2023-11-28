@@ -1,4 +1,4 @@
-import { APIChatInputApplicationCommandInteraction, APIPingInteraction } from "discord-api-types/v10"
+import { APIChatInputApplicationCommandInteraction, APIPingInteraction, APIMessageComponentButtonInteraction } from "discord-api-types/v10"
 import nacl from "tweetnacl"
 
 type VerifyWithNaclArgs = {
@@ -18,7 +18,7 @@ const verifyWithNacl = ({ appPublicKey, signature, rawBody, timestamp }: VerifyW
 
 type VerifyDiscordRequestResult =
   | { isValid: false }
-  | { isValid: true; interaction: APIPingInteraction | APIChatInputApplicationCommandInteraction }
+  | { isValid: true; interaction: APIPingInteraction | APIChatInputApplicationCommandInteraction | APIMessageComponentButtonInteraction }
 
 /**
  * Verify that the interaction request is from Discord and intended for our bot.
