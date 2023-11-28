@@ -9,6 +9,7 @@ import {
 } from "discord-api-types/v10"
 import { NextResponse } from "next/server"
 import { getRandomPic } from "./random-pic"
+import { getAnimeByName } from "./jikan-api"
 
 /**
  * Use edge runtime which is faster, cheaper, and has no cold-boot.
@@ -69,6 +70,19 @@ export async function POST(request: Request) {
         return NextResponse.json({
           type: InteractionResponseType.ChannelMessageWithSource,
           data: { embeds: [embed] },
+        })
+      
+      case commands.anime.name:
+        const { options: animeOptions } = interaction.data
+        if (!animeOptions) {
+          return new NextResponse("Invalid request", { status: 400 })
+        }
+
+        const { value: animeValue } = animeOptions[0] as APIInteractionDataOptionBase<ApplicationCommandOptionType.String, string>
+        const animeEmbed = await getAnimeByName(animeValue)
+        return NextResponse.json({
+          type: InteractionResponseType.ChannelMessageWithSource,
+          data: { embeds: [animeEmbed] },
         })
 
       default:
