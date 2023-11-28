@@ -36,8 +36,22 @@ export const RANDOM_PIC_COMMAND = {
   ],
 } as const
 
+export const ANIME_SEARCH_COMMAND = {
+  name: "anime",
+  description: "Search for an anime",
+  options: [
+    {
+      name: "search",
+      description: "What anime are you looking for?",
+      type: ApplicationCommandType.Message,
+      required: true,
+    },
+  ],
+} as const 
+
 export const commands = {
   ping: PING_COMMAND,
   invite: INVITE_COMMAND,
   randompic: RANDOM_PIC_COMMAND,
+  anime: ANIME_SEARCH_COMMAND,
 } as const
