@@ -36,8 +36,14 @@ export const RANDOM_PIC_COMMAND = {
   ],
 } as const
 
+export const ROLE_COMMAND = {
+  name: "role",
+  description: "Add or remove a role from yourself.",
+} as const
+
 export const commands = {
   ping: PING_COMMAND,
   invite: INVITE_COMMAND,
   randompic: RANDOM_PIC_COMMAND,
+  role: ROLE_COMMAND,
 } as const
