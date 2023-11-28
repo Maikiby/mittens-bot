@@ -7,6 +7,10 @@ import {
   InteractionType,
   MessageFlags,
 } from "discord-api-types/v10"
+import {
+  ButtonStyleTypes,
+  MessageComponentTypes,
+} from 'discord-interactions';
 import { NextResponse } from "next/server"
 import { getRandomPic } from "./random-pic"
 
@@ -70,11 +74,92 @@ export async function POST(request: Request) {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: { embeds: [embed] },
         })
+      
+      case commands.role.name:
+        
+        return NextResponse.json({
+          type: InteractionResponseType.ChannelMessageWithSource,
+          data: { 
+            content: "Click the button below to get a role!",
+            components: [
+              {
+                type: MessageComponentTypes.ACTION_ROW,
+                components: [
+                  {
+                    type: MessageComponentTypes.BUTTON,
+                    custom_id: `role_red_${interaction.message?.id}`,
+                    label: "🟥 Red",
+                    style: ButtonStyleTypes.PRIMARY,
+                  },
+                  {
+                    type: MessageComponentTypes.BUTTON,
+                    custom_id: `role_green_${interaction.message?.id}`,
+                    label: "🟩 Green",
+                    style: ButtonStyleTypes.PRIMARY,
+                  },
+                  {
+                    type: MessageComponentTypes.BUTTON,
+                    custom_id: `role_blue_${interaction.message?.id}`,
+                    label: "🟦 Blue",
+                    style: ButtonStyleTypes.PRIMARY,
+                  },
+                ]
+              }
+            ]
+          },
+        })
 
       default:
       // Pass through, return error at end of function
     }
-  }
+  } 
+
+  if (interaction.type === InteractionType.MessageComponent) {
+
+    console.log('Button has been clicked!: ' + interaction.data.custom_id)
+
+    const [command, color, messageId] = interaction.data.custom_id.split('_');
+    
+    if (!interaction.data.custom_id || !interaction.user || !interaction.member || interaction.user) {
+      return new NextResponse("Invalid request", { status: 400 })
+    }
+
+    const role = interaction.guild_id ? interaction.guild_id : interaction.user.id;
+    const member = interaction.guild_id ? interaction.member : interaction.user;
+    const roleColor = color === "red" ? "1178434821958148117" : color === "green" ? "1178434940950552606" : color === "blue" ? "1178434998169260123" : null;
+    
+    
+    switch (command) {
+      case "role":
+        if (!roleColor) {
+          return new NextResponse("Invalid request", { status: 400 })
+        }
+        if (member.roles.includes(roleColor)) {
+          member.roles.forEach(role => {
+            if (role === roleColor) {
+              role = '';
+            }
+          })
+          return NextResponse.json({
+            type: InteractionResponseType.ChannelMessageWithSource,
+            data: { 
+              content: `Removed role ${color} from <@${member.user.id}>`,
+              flags: MessageFlags.Ephemeral,
+            },
+          })
+        } else {
+          await member.roles.push(roleColor);
+          return NextResponse.json({
+            type: InteractionResponseType.ChannelMessageWithSource,
+            data: { 
+              content: `Added role ${color} to <@${member.user.id}>`,
+              flags: MessageFlags.Ephemeral,
+            },
+          })
+        }
+    }
+
+  } 
 
   return new NextResponse("Unknown command", { status: 400 })
 }
