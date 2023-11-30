@@ -17,6 +17,7 @@ import dotenv from "dotenv"
 dotenv.config({ path: ".env.local" })
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
 const DISCORD_APP_ID = process.env.DISCORD_APP_ID
+const GUILD_ID = process.env.TEST_GUILD_ID
 if (!DISCORD_BOT_TOKEN) {
   throw new Error("The DISCORD_BOT_TOKEN environment variable is required.")
 }
@@ -24,7 +25,17 @@ if (!DISCORD_APP_ID) {
   throw new Error("The DISCORD_APP_ID environment variable is required.")
 }
 
+/*
+  * The URL to register commands to.  This is the global endpoint, so these
+  * commands will be available in all servers.
+  */
 const URL = `https://discord.com/api/v10/applications/${DISCORD_APP_ID}/commands`
+
+/*Uncomment the following line to register commands to a specific server.
+  * This is useful if you're testing commands in a test server.
+  * BE SURE TO COMMENT IT OUT BEFORE COMMITTING!
+  */
+//const URL = `https://discord.com/api/v10/applications/${DISCORD_APP_ID}/guilds/${GUILD_ID}/commands`
 
 /**
  * Register all commands globally.  This can take o(minutes), so wait until
