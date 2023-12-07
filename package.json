@@ -9,6 +9,7 @@
     "register-commands": "tsx ./scripts/register-commands"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^1.0.0",
     "autoprefixer": "^10.4.16",
     "daisyui": "^3.9.3",
     "discord-api-types": "^0.37.54",
