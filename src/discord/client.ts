@@ -1,4 +1,4 @@
-import { APIApplication } from "discord-api-types/v9"
+import { APIApplication } from "discord-api-types/v10"
 import ky from "ky"
 
 export const discordApiClient = ky.create({
