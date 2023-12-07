@@ -1,4 +1,5 @@
 import { commands, RandomPicType } from "@/commands"
+import { discordApiClient } from "@/discord/client"
 import { verifyInteractionRequest } from "@/discord/verify-incoming-request"
 import {
   APIInteractionDataOptionBase,
@@ -7,13 +8,11 @@ import {
   InteractionType,
   MessageFlags,
 } from "discord-api-types/v10"
-import {
-  ButtonStyleTypes,
-  MessageComponentTypes,
-} from 'discord-interactions';
+import { ButtonStyleTypes, MessageComponentTypes } from "discord-interactions"
+import ky from "ky"
 import { NextResponse } from "next/server"
-import { getRandomPic } from "./random-pic"
 import { getAnimeByName } from "./jikan-api"
+import { getRandomPic } from "./random-pic"
 
 /**
  * Use edge runtime which is faster, cheaper, and has no cold-boot.
@@ -75,25 +74,29 @@ export async function POST(request: Request) {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: { embeds: [embed] },
         })
-      
+
       case commands.anime.name:
         const { options: animeOptions } = interaction.data
         if (!animeOptions) {
           return new NextResponse("Invalid request", { status: 400 })
         }
 
-        const { value: animeValue } = animeOptions[0] as APIInteractionDataOptionBase<ApplicationCommandOptionType.String, string>
+        const { value: animeValue } = animeOptions[0] as APIInteractionDataOptionBase<
+          ApplicationCommandOptionType.String,
+          string
+        >
         const animeEmbed = await getAnimeByName(animeValue)
         return NextResponse.json({
           type: InteractionResponseType.ChannelMessageWithSource,
           data: { embeds: [animeEmbed] },
         })
-      
+
       case commands.role.name:
-        
+        const interactionId = interaction.id //message.id keeps coming back as null so we're going with interaction.id instead
+
         return NextResponse.json({
           type: InteractionResponseType.ChannelMessageWithSource,
-          data: { 
+          data: {
             content: "Click the button below to get a role!",
             components: [
               {
@@ -101,79 +104,116 @@ export async function POST(request: Request) {
                 components: [
                   {
                     type: MessageComponentTypes.BUTTON,
-                    custom_id: `role_red_${interaction.message?.id}`,
+                    custom_id: `role_red_${interactionId}`,
                     label: "🟥 Red",
                     style: ButtonStyleTypes.PRIMARY,
                   },
                   {
                     type: MessageComponentTypes.BUTTON,
-                    custom_id: `role_green_${interaction.message?.id}`,
+                    custom_id: `role_green_${interactionId}`,
                     label: "🟩 Green",
                     style: ButtonStyleTypes.PRIMARY,
                   },
                   {
                     type: MessageComponentTypes.BUTTON,
-                    custom_id: `role_blue_${interaction.message?.id}`,
+                    custom_id: `role_blue_${interactionId}`,
                     label: "🟦 Blue",
                     style: ButtonStyleTypes.PRIMARY,
                   },
-                ]
-              }
-            ]
+                ],
+              },
+            ],
           },
         })
 
       default:
       // Pass through, return error at end of function
     }
-  } 
+  }
 
   if (interaction.type === InteractionType.MessageComponent) {
-
-    console.log('Button has been clicked!: ' + interaction.data.custom_id)
-
-    const [command, color, messageId] = interaction.data.custom_id.split('_');
-    
-    if (!interaction.data.custom_id || !interaction.user || !interaction.member || interaction.user) {
+    const [command, color, interactionId] = interaction.data.custom_id.split("_")
+    if (!interaction.data.custom_id || !interaction.member) {
       return new NextResponse("Invalid request", { status: 400 })
     }
 
-    const role = interaction.guild_id ? interaction.guild_id : interaction.user.id;
-    const member = interaction.guild_id ? interaction.member : interaction.user;
-    const roleColor = color === "red" ? "1178434821958148117" : color === "green" ? "1178434940950552606" : color === "blue" ? "1178434998169260123" : null;
-    
-    
+    console.log("Button pressed")
+    console.log(command, color, interactionId)
+    const guild_id = interaction.guild_id ? interaction.guild_id : null
+    const member = interaction.member ? interaction.member : interaction.user
+    const roleId =
+      color === "red"
+        ? "1178434821958148117"
+        : color === "green"
+        ? "1178434940950552606"
+        : color === "blue"
+        ? "1178434998169260123"
+        : null
+    console.log("Variables set")
+    console.log(guild_id, member, roleId)
     switch (command) {
       case "role":
-        if (!roleColor) {
-          return new NextResponse("Invalid request", { status: 400 })
-        }
-        if (member.roles.includes(roleColor)) {
-          member.roles.forEach(role => {
-            if (role === roleColor) {
-              role = '';
+        console.log("Role command")
+
+        if (member && "roles" in member) {
+          console.log("Member has roles")
+          console.log("Checking roles")
+          //console.log("role: " + role)
+          console.log("roleId: " + roleId)
+
+          // Check if member has role, if true remove role, if false add role
+          // This code is terrible and I hate it but I just want this to work
+          if (member.roles.some((role) => role === roleId)) {
+            console.log("Removing role")
+            console.log(guild_id + " " + member.user.id + " " + roleId)
+            try {
+              await fetch(`/guilds/${guild_id}/members/${member.user.id}/roles/${roleId}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+                },
+                method: "DELETE",
+              })
+            } catch (error) {
+              console.log(error)
             }
-          })
-          return NextResponse.json({
-            type: InteractionResponseType.ChannelMessageWithSource,
-            data: { 
-              content: `Removed role ${color} from <@${member.user.id}>`,
-              flags: MessageFlags.Ephemeral,
-            },
-          })
-        } else {
-          await member.roles.push(roleColor);
-          return NextResponse.json({
-            type: InteractionResponseType.ChannelMessageWithSource,
-            data: { 
-              content: `Added role ${color} to <@${member.user.id}>`,
-              flags: MessageFlags.Ephemeral,
-            },
-          })
+
+            return NextResponse.json({
+              type: InteractionResponseType.ChannelMessageWithSource,
+              data: {
+                content: `Removed role ${color} from <@${member.user.id}>`,
+                flags: MessageFlags.Ephemeral,
+              },
+            })
+          } else {
+            console.log("Adding role")
+            console.log(guild_id + " " + member.user.id + " " + roleId)
+
+            try {
+              /*const response = await fetch(`https://discord.com/api/guilds/${guild_id}/members/${member.user.id}/roles/${roleId}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+                },
+                method: "PUT",
+              })*/
+
+              discordApiClient.put(`guilds/${guild_id}/members/${member.user.id}/roles/${roleId}`)
+            } catch (error) {
+              console.log(error)
+            }
+
+            return NextResponse.json({
+              type: InteractionResponseType.ChannelMessageWithSource,
+              data: {
+                content: `Added role ${color} to <@${member.user.id}>`,
+                flags: MessageFlags.Ephemeral,
+              },
+            })
+          }
         }
     }
-
-  } 
+  }
 
   return new NextResponse("Unknown command", { status: 400 })
 }
