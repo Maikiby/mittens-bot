@@ -15,12 +15,9 @@ import { getAnimeByName } from "./jikan-api"
 import { getRandomPic } from "./random-pic"
 
 /**
- * Use edge runtime which is faster, cheaper, and has no cold-boot.
- * If you want to use node runtime, you can change this to `node`, but you'll also have to polyfill fetch (and maybe other things).
- *
- * @see https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes
+ * RIP Edge Runtime on Vercel.
  */
-export const runtime = "edge"
+export const runtime = "nodejs"
 
 // Your public key can be found on your application in the Developer Portal
 const DISCORD_APP_PUBLIC_KEY = process.env.DISCORD_APP_PUBLIC_KEY
