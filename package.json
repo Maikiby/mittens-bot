@@ -40,5 +40,6 @@
   "license": "MIT",
   "description": "Discord bot template using Next.js that runs at the edge. Uses Discord interactions webhooks to receive commands.",
   "main": "index.js",
-  "author": "Jeff Huang"
+  "author": "Jeff Huang",
+  "packageManager": "yarn@4.5.1"
 }
